@@ -1,0 +1,91 @@
+#!/bin/zsh
+set -eu
+
+config_dir="${AIRDROP_NOW_CONFIG_DIR:-$HOME/Library/Application Support/airdrop-now}"
+device_file="$config_dir/device"
+engine="${AIRDROP_NOW_ENGINE:-auto-airdrop}"
+
+usage() {
+  cat <<'EOF'
+Usage: airdrop-now setup
+       airdrop-now devices
+       airdrop-now use "My iPhone"
+       airdrop-now [send] [--to "Device"] FILE [FILE ...]
+       airdrop-now doctor
+
+The device saved with "use" is the default for future sends.
+EOF
+}
+
+need_engine() {
+  if ! command -v "$engine" >/dev/null 2>&1; then
+    print -u2 -- "auto-airdrop is missing. Run: airdrop-now setup"
+    exit 3
+  fi
+}
+
+case "${1:-}" in
+  -h|--help|help|'') usage; exit 0 ;;
+  setup)
+    (( $# == 1 )) || { usage >&2; exit 2; }
+    if ! command -v auto-airdrop >/dev/null 2>&1; then
+      command -v brew >/dev/null 2>&1 || { print -u2 -- "Homebrew is required: https://brew.sh"; exit 3; }
+      brew tap owensantoso/tap
+      brew install owensantoso/tap/auto-airdrop-cli
+    fi
+    exec auto-airdrop doctor
+    ;;
+  devices)
+    (( $# == 1 )) || { usage >&2; exit 2; }
+    need_engine
+    exec "$engine" --list-devices
+    ;;
+  doctor)
+    (( $# == 1 )) || { usage >&2; exit 2; }
+    need_engine
+    exec "$engine" doctor
+    ;;
+  use)
+    (( $# == 2 )) || { usage >&2; exit 2; }
+    [[ -n "$2" && "$2" != *$'\n'* && "$2" != *$'\r'* ]] || { print -u2 -- "Invalid device name"; exit 2; }
+    mkdir -p "$config_dir"
+    chmod 700 "$config_dir"
+    tmp_file="$(mktemp "$config_dir/.device.XXXXXX")"
+    print -rn -- "$2" > "$tmp_file"
+    chmod 600 "$tmp_file"
+    mv -f -- "$tmp_file" "$device_file"
+    print -- "Default device: $2"
+    exit 0
+    ;;
+esac
+
+[[ "${1:-}" == send ]] && shift
+target=""
+typeset -a paths
+while (( $# > 0 )); do
+  case "$1" in
+    --to)
+      (( $# >= 2 )) || { print -u2 -- "--to needs a device name"; exit 2; }
+      target="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      paths+=("$@")
+      break
+      ;;
+    -*)
+      print -u2 -- "Unknown option: $1"
+      exit 2
+      ;;
+    *) paths+=("$1"); shift ;;
+  esac
+done
+
+(( ${#paths} > 0 )) || { usage >&2; exit 2; }
+if [[ -z "$target" && -f "$device_file" ]]; then
+  target="$(cat "$device_file")"
+fi
+[[ -n "$target" ]] || { print -u2 -- "Choose a device: airdrop-now devices, then airdrop-now use \"Device Name\""; exit 2; }
+need_engine
+exec "$engine" --yes --to "$target" "${paths[@]}"
