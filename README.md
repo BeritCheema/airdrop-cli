@@ -13,4 +13,4 @@ airdrop-cli https://example.com
 
 The default starts as **none**. Agents can set it with `airdrop-cli setup --device "Exact iPhone Name"`; `airdrop-cli clear` removes it. `--to "Other Device"` overrides it for one send. On first use, grant **AirDrop CLI** Accessibility access in System Settings.
 
-MIT license. Protocol reference: [OpenDrop](https://github.com/seemoo-lab/opendrop).
+MIT license.
