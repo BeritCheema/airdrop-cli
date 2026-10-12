@@ -1,14 +1,14 @@
-# airdrop-now
+# airdrop-cli
 
-Send a file from a Mac to a chosen AirDrop device with one command. Built for coding agents; uses [auto-airdrop-cli](https://github.com/owensantoso/auto-airdrop-cli) for native AirDrop, discovery, exact device matching, and transfer completion.
+A standalone macOS CLI for sending files to an exact AirDrop device. It uses Apple's native AirDrop service, so Contacts Only works without extracting credentials.
 
 ```sh
-./install.sh
-airdrop-now devices
-airdrop-now use "My iPhone"       # once
-airdrop-now ~/Pictures/photo.jpg  # every time after
+make install
+airdrop-cli devices
+airdrop-cli use "My iPhone"      # once
+airdrop-cli ~/Pictures/photo.jpg # later
 ```
 
-Use `airdrop-now --to "Other Device" photo.jpg` for a one-time target. First use needs macOS Accessibility permission for your terminal, plus Wi-Fi, Bluetooth, and a discoverable iPhone. Same Apple Account devices accept AirDrops automatically.
+`airdrop-cli --to "Other Device" photo.jpg` overrides the saved target. On first use, grant **AirDrop CLI** Accessibility access in System Settings. The receiving device needs Wi-Fi, Bluetooth, and AirDrop enabled.
 
-MIT license. See [LICENSE](LICENSE).
+MIT license. Protocol reference: [OpenDrop](https://github.com/seemoo-lab/opendrop).

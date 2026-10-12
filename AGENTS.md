@@ -1,5 +1,5 @@
 # Agent workflow
 
-When asked to AirDrop a local file, run `airdrop-now doctor`, then `airdrop-now devices` if no saved target is known. Use an exact device label from discovery. Save the user's phone once with `airdrop-now use "<exact label>"`, then send files with `airdrop-now <path>`. An explicit `--to` overrides the saved device for one send. Treat a nonzero exit as failure and report the actual reason. Accessibility approval is a one-time macOS action that only the user can grant.
+Build and install with `make install`. To send a file, run `airdrop-cli devices`, save the user's exact iPhone label once with `airdrop-cli use "<label>"`, then run `airdrop-cli <path>`. For an explicit target, use `--to`. Do not guess among multiple plausible devices. Treat a nonzero exit as a failed transfer.
 
-Do not guess among multiple plausible devices or claim a transfer succeeded before the command exits successfully. `auto-airdrop-cli` provides the native share session and checks completion.
+The app needs one-time macOS Accessibility authorization. Keep this CLI standalone: use Apple's `NSSharingService` and Accessibility API, with no third-party AirDrop CLI dependency. Contacts Only works through the Mac's own Apple AirDrop service. OpenDrop is a protocol reference only; its GPL code must not be copied into this MIT project.
