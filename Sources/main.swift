@@ -142,6 +142,64 @@ func recipientButtons() -> [(String, AXUIElement)] {
     return result.sorted { $0.0.localizedStandardCompare($1.0) == .orderedAscending }
 }
 
+func airDropButton(titled title: String) -> AXUIElement? {
+    let process = AXUIElementCreateApplication(getpid())
+    guard let windows = axAttribute(process, kAXWindowsAttribute) as? [AXUIElement] else { return nil }
+    for window in windows where axString(window, kAXTitleAttribute) == "AirDrop" {
+        var stack = [window]
+        var count = 0
+        while let node = stack.popLast(), count < 400 {
+            count += 1
+            if axString(node, kAXRoleAttribute) == kAXButtonRole as String,
+               (axString(node, kAXTitleAttribute) == title || axString(node, kAXDescriptionAttribute) == title) { return node }
+            if let children = axAttribute(node, kAXChildrenAttribute) as? [AXUIElement] {
+                stack.append(contentsOf: children)
+            }
+        }
+    }
+    return nil
+}
+
+// AirDrop's recipient tile includes its label below the icon. Its frame center
+// can land in the gap, so click the center of the circular icon instead.
+func clickRecipient(_ button: AXUIElement, recipient: Bool = true) -> Bool {
+    guard let positionObject = axAttribute(button, kAXPositionAttribute),
+          let sizeObject = axAttribute(button, kAXSizeAttribute),
+          CFGetTypeID(positionObject) == AXValueGetTypeID(),
+          CFGetTypeID(sizeObject) == AXValueGetTypeID() else { return false }
+    let positionValue = positionObject as! AXValue
+    let sizeValue = sizeObject as! AXValue
+    var origin = CGPoint.zero
+    var size = CGSize.zero
+    guard AXValueGetValue(positionValue, .cgPoint, &origin),
+          AXValueGetValue(sizeValue, .cgSize, &size),
+          size.width > 0, size.height > 0 else { return false }
+
+    let center = CGPoint(x: origin.x + size.width / 2,
+                         y: origin.y + (recipient ? min(size.width / 2, size.height / 2) : size.height / 2))
+    if ProcessInfo.processInfo.environment["AIRDROP_CLI_DEBUG"] == "1" {
+        fputs("airdrop-cli debug: button frame \(origin) \(size), click \(center)\n", stderr)
+    }
+    guard center.x.isFinite, center.y.isFinite,
+          let move = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
+                             mouseCursorPosition: center, mouseButton: .left),
+          let down = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown,
+                             mouseCursorPosition: center, mouseButton: .left) else { return false }
+    NSApp.activate(ignoringOtherApps: true)
+    Thread.sleep(forTimeInterval: 0.1)
+    move.post(tap: .cgSessionEventTap)
+    Thread.sleep(forTimeInterval: 0.05)
+    down.post(tap: .cgSessionEventTap)
+    Thread.sleep(forTimeInterval: 0.07)
+    guard let up = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp,
+                           mouseCursorPosition: center, mouseButton: .left) else { return false }
+    up.post(tap: .cgSessionEventTap)
+    if ProcessInfo.processInfo.environment["AIRDROP_CLI_DEBUG"] == "1" {
+        fputs("airdrop-cli debug: app active \(NSApp.isActive), pointer \(String(describing: CGEvent(source: nil)?.location))\n", stderr)
+    }
+    return true
+}
+
 final class AirDropApp: NSObject, NSApplicationDelegate, NSSharingServiceDelegate {
     let mode: Mode
     var service: NSSharingService
@@ -154,6 +212,9 @@ final class AirDropApp: NSObject, NSApplicationDelegate, NSSharingServiceDelegat
     var lastNames: [String] = []
     var stableReads = 0
     var selected = false
+    var selectionAttempts = 0
+    var nextSelectionAttempt = Date.distantPast
+    var doneClicked = false
     var resultCode: Int32 = 0
 
     init(_ mode: Mode, _ service: NSSharingService) { self.mode = mode; self.service = service }
@@ -186,6 +247,9 @@ final class AirDropApp: NSObject, NSApplicationDelegate, NSSharingServiceDelegat
         service = nextService
         service.delegate = self
         selected = false
+        selectionAttempts = 0
+        nextSelectionAttempt = .distantPast
+        doneClicked = false
         if case .devices = mode { deadline = Date().addingTimeInterval(12) }
         else { deadline = Date().addingTimeInterval(25) }
         let items = current
@@ -206,11 +270,28 @@ final class AirDropApp: NSObject, NSApplicationDelegate, NSSharingServiceDelegat
             }
         case .send(let target, _):
             if !selected, let button = buttons.first(where: { $0.0 == target }) {
-                let status = AXUIElementPerformAction(button.1, kAXPressAction as CFString)
-                guard status == .success else { timer.invalidate(); finish("could not select \(target)", 3); return }
-                selected = true
-                deadline = Date().addingTimeInterval(120)
-                print("Sending to \(target)…")
+                let description = axString(button.1, kAXDescriptionAttribute) ?? ""
+                if description.localizedCaseInsensitiveContains("Waiting") || description.localizedCaseInsensitiveContains("Sent") {
+                    selected = true
+                    deadline = Date().addingTimeInterval(120)
+                    print("Sending to \(target)…")
+                } else if Date() >= nextSelectionAttempt {
+                    guard selectionAttempts < 4 else {
+                        timer.invalidate()
+                        finish("could not select \(target) in the AirDrop picker", 3)
+                        return
+                    }
+                    guard clickRecipient(button.1) else { timer.invalidate(); finish("could not click \(target)", 3); return }
+                    selectionAttempts += 1
+                    nextSelectionAttempt = Date().addingTimeInterval(2)
+                }
+            }
+            if selected, !doneClicked,
+               let button = buttons.first(where: { $0.0 == target }),
+               let description = axString(button.1, kAXDescriptionAttribute) {
+                if description.localizedCaseInsensitiveContains("Sent"), let done = airDropButton(titled: "Done") {
+                    doneClicked = AXUIElementPerformAction(done, kAXPressAction as CFString) == .success || clickRecipient(done, recipient: false)
+                }
             }
             if Date() >= deadline {
                 timer.invalidate()
@@ -221,6 +302,10 @@ final class AirDropApp: NSObject, NSApplicationDelegate, NSSharingServiceDelegat
 
     func sharingService(_ service: NSSharingService, didShareItems items: [Any]) {
         guard case .send(let target, _) = mode else { finish(nil, 0); return }
+        guard selected else {
+            finish("AirDrop completed after manual selection; automated recipient selection was not verified", 1)
+            return
+        }
         sentCount += items.count
         if pending.isEmpty {
             print("Sent \(sentCount) item\(sentCount == 1 ? "" : "s") to \(target)")
