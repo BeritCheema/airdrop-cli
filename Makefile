@@ -19,6 +19,8 @@ install: build
 test: build
 	"$(BIN)" --help
 	! "$(BIN)" --to "Example iPhone" /this/file/does/not/exist
+	! "$(BIN)" --to "Example iPhone" https://
+	@tmp=$$(mktemp -d); AIRDROP_CLI_CONFIG_DIR="$$tmp" "$(BIN)" clear; AIRDROP_CLI_CONFIG_DIR="$$tmp" "$(BIN)" setup --device "Test iPhone"; test "$$(cat "$$tmp/device")" = "Test iPhone"; AIRDROP_CLI_CONFIG_DIR="$$tmp" "$(BIN)" clear; test ! -e "$$tmp/device"; rmdir "$$tmp"
 
 clean:
 	rm -rf build
