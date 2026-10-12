@@ -1,11 +1,11 @@
 # Demo
 
-The [17-second video](airdrop-cli-demo.mp4) shows a real AirDrop of this repository's URL from a Mac to `ipon`, followed by the iPhone opening the repository in Safari. The command card is designed; the AirDrop picker and iPhone screen are recorded footage.
+The [video](airdrop-cli-demo.mp4) cuts together an actual Mac AirDrop send of this repository's URL and an iPhone screen recording opening it in Safari. The Mac background was cleaned to remove unrelated windows; the AirDrop picker is from the live transfer.
 
-To recreate the cut from your own Mac and iPhone recordings:
+To make the same cut with source recordings:
 
 ```sh
-python3 demo/cut-real.py --mac mac.mp4 --iphone iphone.mov
+python3 demo/cut-real.py --mac mac.mp4 --iphone iphone.mov --desktop clean-mac.png
 ```
 
-The cut script expects the same capture timing and screen size as the source recordings for this demo. The finished MP4 is the portable deliverable.
+The cut script uses capture timing and screen sizes from this recording.
