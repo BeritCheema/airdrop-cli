@@ -1,6 +1,6 @@
 # airdrop-cli
 
-[Live demo](https://beritcheema.github.io/airdrop-cli/)
+[Watch the demo](demo/airdrop-cli-demo.mp4)
 
 A standalone macOS CLI for sending files and links to an exact AirDrop device. It uses Apple's native AirDrop service, so Contacts Only works without extracting credentials.
 
