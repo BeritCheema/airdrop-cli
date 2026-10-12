@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111720" />
+    <meta name="description" content="Send a file or link from your Mac to your iPhone with one command. Set your AirDrop device once, then let your terminal or coding agent handle the rest." />
+    <meta property="og:title" content="airdrop-cli — from Mac to iPhone, one command" />
+    <meta property="og:description" content="Pick your iPhone once. Send files and links through macOS AirDrop from your terminal or coding agent." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://beritcheema.github.io/airdrop-cli/" />
+    <title>airdrop-cli — from Mac to iPhone, one command</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="./main.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand" href="#top" aria-label="airdrop-cli home"><span class="brand-mark" aria-hidden="true">↗</span><span>airdrop<span class="brand-dash">-</span>cli</span></a>
+        <nav aria-label="Main navigation">
+          <a href="#demo">Demo</a>
+          <a href="#how">How it works</a>
+          <a class="nav-github" href="https://github.com/BeritCheema/airdrop-cli" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero shell" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="live-dot"></span> MAC → IPHONE <span class="eyebrow-divider">/</span> ONE COMMAND</div>
+          <h1 id="hero-title">From your Mac<br />to your iPhone.<br /><em>One command.</em></h1>
+          <p class="hero-description">Set your phone once. Then AirDrop a file or link from your terminal—or let a coding agent send it for you.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#demo">See the demo <span aria-hidden="true">↘</span></a>
+            <a class="button button-plain" href="https://github.com/BeritCheema/airdrop-cli" target="_blank" rel="noopener noreferrer">View the code <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="hero-note">Uses macOS AirDrop. No iPhone app required.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="mac-tile"><span class="mac-topline">MAC / TERMINAL</span><span class="mac-command">$ airdrop-cli photo.png<span class="cursor"></span></span><span class="mac-status"><span class="tiny-check">✓</span> Sent to ipon</span></div>
+          <div class="transfer-path"><span></span><span></span><span></span><span></span></div>
+          <div class="phone-tile"><div class="phone-island"></div><div class="phone-screen"><span class="phone-small">AirDrop</span><div class="photo-art"><span class="photo-sun"></span><span class="photo-hill photo-hill-back"></span><span class="photo-hill photo-hill-front"></span></div><span class="phone-label">photo.png</span><span class="phone-received"><span class="tiny-check">✓</span> Received</span></div></div>
+          <div class="art-caption">Illustrated flow</div>
+        </div>
+      </section>
+
+      <section class="demo-section" id="demo" aria-labelledby="demo-title">
+        <div class="shell">
+          <div class="section-topline"><span>01 / THE DEMO</span><span>NO DEVICE PICKER CLICK</span></div>
+          <div class="section-intro"><h2 id="demo-title">The handoff,<br /><em>minus the handwork.</em></h2><p>Choose a saved device and run one command. The CLI finds the exact AirDrop recipient and waits for macOS to report the send.</p></div>
+          <div class="demo-layout">
+            <div class="terminal-panel">
+              <div class="terminal-head"><div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div><span>airdrop-cli · demo</span><span class="terminal-label">ILLUSTRATED</span></div>
+              <div class="terminal-body">
+                <div class="scenario-buttons" role="group" aria-label="Choose demo scenario"><button type="button" class="scenario is-active" data-scenario="photo" aria-pressed="true">Send a photo</button><button type="button" class="scenario" data-scenario="link" aria-pressed="false">Send a link</button></div>
+                <div class="terminal-lines" id="terminal-lines" aria-live="polite"></div>
+                <button class="replay" type="button" id="replay-demo"><span aria-hidden="true">↻</span> Replay demo</button>
+              </div>
+            </div>
+            <div class="demo-result" aria-label="Illustration of the iPhone receiving a transfer">
+              <div class="result-top"><span>YOUR IPHONE</span><span class="result-dot"></span></div>
+              <div class="result-icon" id="result-icon" aria-hidden="true">↗</div>
+              <div class="result-kicker" id="result-kicker">READY TO RECEIVE</div>
+              <div class="result-title" id="result-title">From command<br />to pocket.</div>
+              <div class="result-caption" id="result-caption">Select a scenario to watch the command flow.</div>
+              <div class="result-footer"><span>DEVICE</span><strong>ipon</strong></div>
+            </div>
+          </div>
+          <p class="demo-disclaimer">This is an illustration of the CLI flow. Real iPhone footage will be added after capture.</p>
+        </div>
+      </section>
+
+      <section class="how-section shell" id="how" aria-labelledby="how-title">
+        <div class="section-topline"><span>02 / THE SETUP</span><span>ONCE, THEN DONE</span></div>
+        <div class="section-intro"><h2 id="how-title">A small setup.<br /><em>A very short send.</em></h2><p>For Mac users who want the result on their phone, and for agents that should handle the clicks.</p></div>
+        <div class="steps">
+          <article class="step"><span class="step-number">01</span><div class="step-icon" aria-hidden="true">⌘</div><h3>Install on your Mac</h3><p>Build the small Swift app, then grant it Accessibility access once so it can select your AirDrop recipient.</p></article>
+          <article class="step"><span class="step-number">02</span><div class="step-icon" aria-hidden="true">◎</div><h3>Choose your phone</h3><p>Discover nearby devices and save the exact one you want. The default starts as none.</p></article>
+          <article class="step"><span class="step-number">03</span><div class="step-icon" aria-hidden="true">↗</div><h3>Send anything supported</h3><p>Pass a picture, file, or URL. Use <code>--to</code> when you want a different device for one send.</p></article>
+        </div>
+      </section>
+
+      <section class="install-section" id="install" aria-labelledby="install-title">
+        <div class="shell install-inner"><div><span class="section-kicker">03 / TRY IT</span><h2 id="install-title">Your next AirDrop<br />starts here.</h2><p>macOS and an AirDrop capable device nearby. No extra iPhone app, server, or account for this tool.</p></div><div class="install-card"><div class="install-card-head"><span>TERMINAL</span><button id="copy-install" type="button" aria-label="Copy install commands">Copy</button></div><pre><code>git clone https://github.com/BeritCheema/airdrop-cli.git
+cd airdrop-cli && make install
+airdrop-cli setup
+airdrop-cli ~/Pictures/photo.png</code></pre><div class="install-card-foot">Prefer links? <code>airdrop-cli https://example.com</code></div></div></div>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="shell footer-inner"><span class="footer-brand">airdrop-cli <span>↗</span></span><span>Open source · MIT · Made for macOS</span><a href="https://github.com/BeritCheema/airdrop-cli" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></div></footer>
+  </body>
+</html>
